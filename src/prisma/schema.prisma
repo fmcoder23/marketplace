@@ -1,0 +1,272 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum Role {
+    USER
+    ADMIN
+    SELLER
+    WAREHOUSE_MANAGER
+}
+
+enum OrderStatus {
+    PENDING
+    SHIPPED
+    DELIVERED
+    CANCELLED
+    COMPLETED
+}
+
+enum WaybillStatus {
+    PENDING
+    DELIVERED
+    ACCEPTED
+    CANCELLED
+}
+
+model User {
+    id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    email    String
+    fullname String
+    password String
+    location Json
+
+    role Role @default(USER)
+
+    orders  Order[]
+    reviews Review[]
+    carts   Cart[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+    @@unique([email])
+}
+
+model Seller {
+    id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    email    String
+    fullname String
+    password String
+
+    role Role @default(SELLER)
+
+    markets  Market[]
+    waybills Waybill[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+    @@unique([email])
+}
+
+model Admin {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    username String
+    fullname String
+    password String
+
+    role Role @default(ADMIN)
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+    @@unique([username])
+}
+
+model Market {
+    id          String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    name        String
+    description String
+    logo        String
+
+    sellerId String @db.Uuid
+    seller   Seller @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+
+    products Product[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+    @@unique([name])
+}
+
+model Category {
+    id   String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    name String
+
+    products Product[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+    @@unique([name])
+}
+
+model Product {
+    id          String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    name        String
+    description String
+    photos      String[]
+    price       Int
+    stock       Int
+    rating      Int      @default(5)
+
+    categoryId String   @db.Uuid
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    marketId String @db.Uuid
+    market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    orders   OrderItem[]
+    reviews  Review[]
+    waybills WaybillItem[]
+    carts    CartItem[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model Order {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    status       OrderStatus
+    orderedItems OrderItem[]
+    totalPrice   Int
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model OrderItem {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    orderId String @db.Uuid
+    order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    quantity Int
+    price    Int
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model Review {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    rating  Int
+    photos  String[]
+    comment String
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model Waybill {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    items  WaybillItem[]
+    status WaybillStatus @default(PENDING)
+
+    sellerId String @db.Uuid
+    seller   Seller @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model WaybillItem {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    waybillId String  @db.Uuid
+    waybill   Waybill @relation(fields: [waybillId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    quantity Int
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model Cart {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    items      CartItem[]
+    totalPrice Int
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
+
+model CartItem {
+    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    cartId String @db.Uuid
+    cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    quantity Int
+    price    Int
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@id([id])
+}
