@@ -35,6 +35,6 @@ export class AuthService {
     const hashedPassword = await PasswordHasher.hashPassword(registerDto.password);
     const user = await this.usersService.createUser({ ...registerDto, password: hashedPassword });
     const token = this.jwtService.sign({id: user.id, role: user.role})
-    return { message: 'User registered successfully', user };
+    return { message: 'User registered successfully', user, token };
   }
 }

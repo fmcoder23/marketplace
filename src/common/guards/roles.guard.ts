@@ -14,7 +14,11 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<Role[]>('roles', context.getHandler());
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     if (!requiredRoles) {
       return true;
     }
@@ -31,7 +35,7 @@ export class RolesGuard implements CanActivate {
 
     try {
       user = this.jwtService.verify<JwtPayload>(token, {
-        secret: this.config.get('jwt.secret')
+        secret: this.config.get('jwt.secret'),
       });
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
@@ -41,7 +45,7 @@ export class RolesGuard implements CanActivate {
       throw new UnauthorizedException('You do not have the required role');
     }
 
-    request.user = user; 
+    request.user = user; // Attach user to the request
     return true;
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, Put } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Put, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { successResponse } from '../../common/utils/api-response';
@@ -7,13 +7,33 @@ import { UpdateUserDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 
 @ApiTags("USERS")
 @ApiBearerAuth()
 @UseGuards(RolesGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
+
+  @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
+  @Get('me')
+  async getMe(@Req() request) {
+    const user = request.user as JwtPayload;
+    const userProfile = await this.usersService.getUserById(user.id);
+    return successResponse(userProfile, 'User profile fetched successfully');
+  }
+
+  @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
+  @Put('me')
+  async updateMe(
+    @Req() request,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const user = request.user as JwtPayload;
+    const updatedUser = await this.usersService.updateUser(user.id, updateUserDto);
+    return successResponse(updatedUser, 'User profile updated successfully');
+  }
 
   @Roles(Role.ADMIN)
   @Post()
@@ -30,7 +50,7 @@ export class UsersController {
   }
 
   @Roles(Role.ADMIN)
-   @Get()
+  @Get()
   async getAllUsers() {
     const users = await this.usersService.getAllUsers();
     return successResponse(users, 'All users fetched successfully');
