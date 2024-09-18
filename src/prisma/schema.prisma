@@ -30,36 +30,19 @@ enum WaybillStatus {
 }
 
 model User {
-    id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    email    String
-    fullname String
-    password String
-    location Json
+    id        String     @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    email     String
+    fullname  String
+    password  String
+    locations Location[]
 
     role Role @default(USER)
 
-    orders  Order[]
-    reviews Review[]
-    carts   Cart[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@id([id])
-    @@unique([email])
-}
-
-model Seller {
-    id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    email    String
-    fullname String
-    password String
-
-    role Role @default(SELLER)
-
-    markets  Market[]
+    orders   Order[]
+    reviews  Review[]
+    carts    Cart[]
     waybills Waybill[]
+    markets  Market[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -69,21 +52,22 @@ model Seller {
     @@unique([email])
 }
 
-model Admin {
-    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model Location {
+    id        String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    title     String
+    address   String
+    longitude Float
+    latitude  Float
 
-    username String
-    fullname String
-    password String
-
-    role Role @default(ADMIN)
+    userId String @db.Uuid
+    user   User   @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: Cascade)
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
     @@id([id])
-    @@unique([username])
+    @@unique([title, userId])
 }
 
 model Market {
@@ -93,7 +77,7 @@ model Market {
     logo        String
 
     sellerId String @db.Uuid
-    seller   Seller @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+    seller   User   @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
 
     products Product[]
 
@@ -154,7 +138,6 @@ model Order {
 
     status       OrderStatus
     orderedItems OrderItem[]
-    totalPrice   Int
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -205,11 +188,13 @@ model Review {
 model Waybill {
     id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-    items  WaybillItem[]
-    status WaybillStatus @default(PENDING)
+    items         WaybillItem[]
+    status        WaybillStatus @default(PENDING)
+    scheduledDate DateTime
+    acceptedDate  DateTime?
 
     sellerId String @db.Uuid
-    seller   Seller @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+    seller   User   @relation(fields: [sellerId], references: [id], onUpdate: NoAction, onDelete: Cascade)
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -242,8 +227,7 @@ model Cart {
     userId String @db.Uuid
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-    items      CartItem[]
-    totalPrice Int
+    items CartItem[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt

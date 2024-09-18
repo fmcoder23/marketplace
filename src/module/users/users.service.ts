@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CustomException } from '../../common/exceptions/custom-exception'; 
-import { successResponse } from 'src/utils/api-response';
+import { successResponse } from 'src/common/utils/api-response';
 import { RegisterDto } from '../auth/dto';
 import { UpdateUserDto } from './dto';
 

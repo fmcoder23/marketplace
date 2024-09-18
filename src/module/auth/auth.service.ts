@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { PasswordHasher } from '../../utils/password-hasher';
+import { PasswordHasher } from '../../common/utils/password-hasher';
 import { LoginDto, RegisterDto } from './dto';
 
 @Injectable()
@@ -34,6 +34,7 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const hashedPassword = await PasswordHasher.hashPassword(registerDto.password);
     const user = await this.usersService.createUser({ ...registerDto, password: hashedPassword });
+    const token = this.jwtService.sign({id: user.id, role: user.role})
     return { message: 'User registered successfully', user };
   }
 }

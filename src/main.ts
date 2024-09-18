@@ -28,7 +28,7 @@ async function bootstrap() {
   );
 
   const configSwagger = new DocumentBuilder()
-    .setTitle('MedLink API Docs')
+    .setTitle('Marketplace API Docs')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
