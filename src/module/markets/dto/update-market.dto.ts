@@ -1,4 +1,21 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateMarketDto } from './create-market.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
 
-export class UpdateMarketDto extends PartialType(CreateMarketDto) {}
+export class UpdateMarketDto {
+
+    @IsString()
+    @IsOptional()
+    @ApiPropertyOptional({example: "Uzum Market"})
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    @ApiPropertyOptional({example: "Description about Uzum Market"})
+    description?: string;
+
+    @IsString()
+    @IsOptional()
+    @ApiPropertyOptional({example: "logo.png"})
+    logo?: string;
+    
+}

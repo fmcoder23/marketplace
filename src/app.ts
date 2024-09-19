@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Configuration } from '@config';
 import { PrismaModule } from '@prisma'
-import { AuthModule, UsersModule } from '@module'
+import { AuthModule, MarketsModule, UploadModule, UsersModule } from '@module'
 
 @Module({
   imports: [
@@ -10,9 +10,11 @@ import { AuthModule, UsersModule } from '@module'
       load: [Configuration],
       isGlobal: true
     }),
+    UploadModule,
     AuthModule,
     UsersModule,
     PrismaModule,
+    MarketsModule
   ],
 })
 export class AppModule { }
