@@ -38,11 +38,12 @@ model User {
 
     role Role @default(USER)
 
-    orders   Order[]
-    reviews  Review[]
-    carts    Cart[]
-    waybills Waybill[]
-    markets  Market[]
+    orders    Order[]
+    reviews   Review[]
+    carts     Cart[]
+    waybills  Waybill[]
+    markets   Market[]
+    favorites Favorite[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -118,10 +119,11 @@ model Product {
     marketId String @db.Uuid
     market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-    orders   OrderItem[]
-    reviews  Review[]
-    waybills WaybillItem[]
-    carts    CartItem[]
+    orders    OrderItem[]
+    reviews   Review[]
+    waybills  WaybillItem[]
+    carts     CartItem[]
+    favorites Favorite[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -253,4 +255,18 @@ model CartItem {
     deletedAt DateTime?
 
     @@id([id])
+}
+
+model Favorite {
+    id        String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    userId    String  @db.Uuid
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@id([id])
+    @@unique([userId, productId])
 }
