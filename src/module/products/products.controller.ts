@@ -1,34 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductDto, UpdateProductDto } from './dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { RolesGuard, Roles, successResponse } from '@common';
+import { Request } from 'express';
 
+@ApiTags('PRODUCTS')
+@ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @Roles(Role.ADMIN, Role.SELLER)
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  async create(@Body() createProductDto: CreateProductDto) {
+    const data = await this.productsService.create(createProductDto);
+    return successResponse(data, 'Product created successfully');
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  async findAll() {
+    const data = await this.productsService.findAll();
+    return successResponse(data, 'All products retrieved successfully');
+  }
+
+  @Roles(Role.SELLER)
+  @Get('me')
+  async findMyProducts(@Req() request: Request) {
+    const user = request.user;
+    const data = await this.productsService.findMyProducts(user.id);
+    return successResponse(data, "Current seller's products retrieved successfully");
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+
+  async findOne(@Param('id') id: string) {
+    const data = await this.productsService.findOne(id);
+    return successResponse(data, 'Product retrieved successfully');
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  @Roles(Role.ADMIN, Role.SELLER)
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    const data = await this.productsService.update(id, updateProductDto);
+    return successResponse(data, 'Product updated successfully');
   }
 
+  @Roles(Role.ADMIN, Role.SELLER)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.productsService.remove(id);
+    return successResponse(null, 'Product deleted successfully');
   }
 }

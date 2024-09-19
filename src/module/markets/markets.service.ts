@@ -58,6 +58,9 @@ export class MarketsService {
         sellerId: userId,
         deletedAt: null,
       },
+      include: {
+        products: true,
+      }
     });
   }
 

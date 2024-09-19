@@ -110,7 +110,7 @@ model Product {
     description String
     photos      String[]
     price       Int
-    stock       Int
+    stock       Int      @default(0)
     rating      Int      @default(5)
 
     categoryId String   @db.Uuid

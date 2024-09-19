@@ -9,5 +9,6 @@ import { RolesGuard } from '@common';
   imports: [PrismaModule],
   controllers: [MarketsController],
   providers: [MarketsService, JwtService, RolesGuard],
+  exports: [MarketsService]
 })
 export class MarketsModule {}
