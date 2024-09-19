@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '@prisma';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 
 @Injectable()
 export class CategoriesService {
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createCategoryDto: CreateCategoryDto) {
+    const existingCategory = await this.prisma.category.findUnique({
+      where: { name: createCategoryDto.name, deletedAt: null },
+    });
+
+    if (existingCategory) {
+      throw new BadRequestException('Category with the same name already exists');
+    }
+
+    return this.prisma.category.create({
+      data: createCategoryDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all categories`;
+  async findAll() {
+    return this.prisma.category.findMany({
+      where: { deletedAt: null },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: {
+        _count: true,
+        products: true,
+      }
+    });
+
+    if (!category || category.deletedAt) {
+      throw new NotFoundException('Category not found or has been deleted');
+    }
+
+    return category;
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    await this.findOne(id);
+    return this.prisma.category.update({
+      where: { id },
+      data: updateCategoryDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.category.update({
+      where: { id },
+      data: { deletedAt: new Date() }, 
+    });
   }
 }

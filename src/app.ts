@@ -4,6 +4,7 @@ import { PrismaModule } from '@prisma'
 import { AuthModule, MarketsModule, UploadModule, UsersModule } from '@module'
 import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config';
 import { LocationsModule } from './module/locations';
+import { CategoriesModule } from './module/categories';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { LocationsModule } from './module/locations';
     UsersModule,
     PrismaModule,
     MarketsModule,
-    LocationsModule
+    LocationsModule,
+    CategoriesModule
   ],
 })
 export class AppModule { }
