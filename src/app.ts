@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@prisma'
 import { AuthModule, MarketsModule, UploadModule, UsersModule } from '@module'
 import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config';
+import { LocationsModule } from './module/locations';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config
     AuthModule,
     UsersModule,
     PrismaModule,
-    MarketsModule
+    MarketsModule,
+    LocationsModule
   ],
 })
 export class AppModule { }
