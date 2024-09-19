@@ -2,8 +2,7 @@ import { Controller, Get, Post, Delete, Param, Body, UseGuards, Put, Req } from 
 import { UsersService } from './users.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { successResponse } from '../../common/utils/api-response';
-import { RegisterDto } from '../auth/dto';
-import { UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -18,7 +17,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
   @Get('me')
-  async getMe(@Req() request) {
+  async getMe(@Req() request: any) {
     const user = request.user as JwtPayload;
     const userProfile = await this.usersService.getUserById(user.id);
     return successResponse(userProfile, 'User profile fetched successfully');
@@ -27,7 +26,7 @@ export class UsersController {
   @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
   @Put('me')
   async updateMe(
-    @Req() request,
+    @Req() request: any,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const user = request.user as JwtPayload;
@@ -37,8 +36,8 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @Post()
-  async createUser(@Body() registerDto: RegisterDto) {
-    const newUser = await this.usersService.createUser(registerDto);
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    const newUser = await this.usersService.createUser(createUserDto);
     return successResponse(newUser, 'User created successfully');
   }
 
@@ -46,14 +45,14 @@ export class UsersController {
   @Get(':id')
   async getUser(@Param('id') id: string) {
     const user = await this.usersService.getUserById(id);
-    return successResponse(user, 'User fetched successfully');
+    return successResponse(user, 'User found successfully');
   }
 
   @Roles(Role.ADMIN)
   @Get()
   async getAllUsers() {
     const users = await this.usersService.getAllUsers();
-    return successResponse(users, 'All users fetched successfully');
+    return successResponse(users, 'All users found successfully');
   }
 
   @Roles(Role.ADMIN)

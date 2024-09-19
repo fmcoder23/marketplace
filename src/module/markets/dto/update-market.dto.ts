@@ -1,21 +1,19 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateMarketDto {
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ example: 'Updated Market Name' })
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    @ApiPropertyOptional({example: "Uzum Market"})
-    name?: string;
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ example: 'Updated description about the market' })
+  description?: string;
 
-    @IsString()
-    @IsOptional()
-    @ApiPropertyOptional({example: "Description about Uzum Market"})
-    description?: string;
-
-    @IsString()
-    @IsOptional()
-    @ApiPropertyOptional({example: "logo.png"})
-    logo?: string;
-    
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ example: 'updated-logo.png' })
+  logo?: string;
 }

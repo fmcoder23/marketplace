@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { PasswordHasher } from '../../common/utils/password-hasher';
 import { LoginDto, RegisterDto } from './dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -11,30 +12,70 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  private async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await PasswordHasher.comparePassword(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      const { password, ...userData } = user;
+      return userData;
     }
     return null;
   }
 
-  async login(loginDto: LoginDto) {
+  private generateToken(user: any) {
+    const payload = { id: user.id, role: user.role };
+    return this.jwtService.sign(payload);
+  }
+
+  async login(loginDto: LoginDto, requiredRole?: Role) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
+
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    const payload = { id: user.id, role: user.role };
-    return {
-      token: this.jwtService.sign(payload),
-    };
+
+    if (requiredRole && user.role !== requiredRole) {
+      throw new UnauthorizedException('Unauthorized role access');
+    }
+
+    const token = this.generateToken(user);
+    return { message: 'Login successful', token };
   }
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, role: Role = Role.USER) {
+    const existingUser = await this.usersService.findOneByEmail(registerDto.email);
+
+    if (existingUser) {
+      throw new BadRequestException('Email is already registered');
+    }
+
     const hashedPassword = await PasswordHasher.hashPassword(registerDto.password);
-    const user = await this.usersService.createUser({ ...registerDto, password: hashedPassword });
-    const token = this.jwtService.sign({id: user.id, role: user.role})
-    return { message: 'User registered successfully', user, token };
+    const newUser = await this.usersService.createUser({ 
+      ...registerDto, 
+      password: hashedPassword, 
+      role 
+    });
+
+    const token = this.generateToken(newUser);
+    return { message: 'Registration successful', user: newUser, token };
+  }
+
+  async userLogin(loginDto: LoginDto) {
+    return this.login(loginDto, Role.USER);
+  }
+
+  async adminLogin(loginDto: LoginDto) {
+    return this.login(loginDto, Role.ADMIN);
+  }
+
+  async sellerLogin(loginDto: LoginDto) {
+    return this.login(loginDto, Role.SELLER);
+  }
+
+  async userRegister(registerDto: RegisterDto) {
+    return this.register(registerDto, Role.USER);
+  }
+
+  async sellerRegister(registerDto: RegisterDto) {
+    return this.register(registerDto, Role.SELLER);
   }
 }

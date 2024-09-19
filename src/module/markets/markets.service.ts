@@ -1,26 +1,93 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMarketDto } from './dto/create-market.dto';
-import { UpdateMarketDto } from './dto/update-market.dto';
+// markets.service.ts
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateMarketDto, UpdateMarketDto } from './dto';
 
 @Injectable()
 export class MarketsService {
-  create(createMarketDto: CreateMarketDto) {
-    return 'This action adds a new market';
+  constructor(private readonly prisma: PrismaService) {}
+
+  private async findMarketByName(name: string) {
+    return this.prisma.market.findFirst({
+      where: { name, deletedAt: null },
+    });
   }
 
-  findAll() {
-    return `This action returns all markets`;
+  async createForAdmin({ description, logo, name, userId }: CreateMarketDto) {
+    await this.ensureMarketNameIsUnique(name);
+    return this.prisma.market.create({
+      data: {
+        name,
+        description,
+        logo,
+        sellerId: userId,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} market`;
+  async createForSeller({ description, logo, name }: CreateMarketDto, userId: string) {
+    await this.ensureMarketNameIsUnique(name);
+    return this.prisma.market.create({
+      data: {
+        name,
+        description,
+        logo,
+        sellerId: userId,
+      },
+    });
   }
 
-  update(id: number, updateMarketDto: UpdateMarketDto) {
-    return `This action updates a #${id} market`;
+  private async ensureMarketNameIsUnique(name: string) {
+    const market = await this.findMarketByName(name);
+    if (market) {
+      throw new BadRequestException('Market with the same name already exists');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} market`;
+  async findAll() {
+    return this.prisma.market.findMany({
+      where: { deletedAt: null },
+      include: {
+        seller: true, 
+      },
+    });
+  }
+
+  async findMyMarkets(userId: string) {
+    return this.prisma.market.findMany({
+      where: {
+        sellerId: userId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const market = await this.prisma.market.findUnique({
+      where: { id },
+    });
+    if (!market || market.deletedAt) {
+      throw new NotFoundException('Market not found');
+    }
+    return market;
+  }
+
+  async update(id: string, updateMarketDto: UpdateMarketDto) {
+    await this.findOne(id);
+    return this.prisma.market.update({
+      where: { id },
+      data: updateMarketDto,
+    });
+  }
+
+  async remove(id: string) {
+    const market = await this.findOne(id);
+    if (!market) {
+      throw new NotFoundException('Market not found');
+    }
+    return this.prisma.market.update({
+      where: { id },
+      data: { deletedAt: new Date() }, 
+    });
   }
 }
