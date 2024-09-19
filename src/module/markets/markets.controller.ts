@@ -2,10 +2,8 @@ import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from 
 import { MarketsService } from './markets.service';
 import { CreateMarketDto, UpdateMarketDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { successResponse } from 'src/common/utils/api-response';
+import { Roles, RolesGuard, successResponse } from '@common';
 
 @ApiTags('MARKETS')
 @UseGuards(RolesGuard)

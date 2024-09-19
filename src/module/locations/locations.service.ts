@@ -12,15 +12,19 @@ export class LocationsService {
     return `This action returns all locations`;
   }
 
-  findOne(id: number) {
+  findMyLocations() {
+    return `This action returns all locations`;
+  }
+
+  findOne(id: string) {
     return `This action returns a #${id} location`;
   }
 
-  update(id: number, updateLocationDto: UpdateLocationDto) {
+  update(id: string, updateLocationDto: UpdateLocationDto) {
     return `This action updates a #${id} location`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} location`;
   }
 }

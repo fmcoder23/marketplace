@@ -3,7 +3,7 @@ import { MarketsService } from './markets.service';
 import { MarketsController } from './markets.controller';
 import { PrismaModule } from '@prisma';
 import { JwtService } from '@nestjs/jwt';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { RolesGuard } from '@common';
 
 @Module({
   imports: [PrismaModule],

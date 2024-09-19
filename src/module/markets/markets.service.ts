@@ -1,6 +1,5 @@
-// markets.service.ts
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '@prisma';
 import { CreateMarketDto, UpdateMarketDto } from './dto';
 
 @Injectable()

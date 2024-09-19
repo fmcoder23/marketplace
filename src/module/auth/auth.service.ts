@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { PasswordHasher } from '../../common/utils/password-hasher';
+import { PasswordHasher } from '@common';
 import { LoginDto, RegisterDto } from './dto';
 import { Role } from '@prisma/client';
 

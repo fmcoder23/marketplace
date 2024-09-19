@@ -1,12 +1,9 @@
 import { Controller, Get, Post, Delete, Param, Body, UseGuards, Put, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { successResponse } from '../../common/utils/api-response';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
+import { JwtPayload, Roles, RolesGuard, successResponse } from '@common';
 
 @ApiTags("USERS")
 @ApiBearerAuth()
