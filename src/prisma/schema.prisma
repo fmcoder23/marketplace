@@ -133,20 +133,20 @@ model Product {
 }
 
 model Order {
-    id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String      @db.Uuid
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status       OrderStatus @default(PENDING)
+  orderedItems OrderItem[]
+  totalPrice   Int
 
-    userId String @db.Uuid
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?
 
-    status       OrderStatus
-    orderedItems OrderItem[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@id([id])
+  @@id([id])
 }
+
 
 model OrderItem {
     id String @default(dbgenerated("gen_random_uuid()")) @db.Uuid

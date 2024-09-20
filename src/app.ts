@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@prisma'
-import { AuthModule, CategoriesModule, LocationsModule, MarketsModule, ProductsModule, UploadModule, UsersModule } from '@module'
+import { AuthModule, CategoriesModule, LocationsModule, MarketsModule, OrdersModule, ProductsModule, UploadModule, UsersModule } from '@module'
 import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config';
 
 @Module({
@@ -18,12 +18,13 @@ import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config
     }),
     UploadModule,
     AuthModule,
-    UsersModule,
+    UsersModule,  
     PrismaModule,
     MarketsModule,
     LocationsModule,
     CategoriesModule,
-    ProductsModule
+    ProductsModule,
+    OrdersModule
   ],
 })
 export class AppModule { }

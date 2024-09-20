@@ -7,6 +7,13 @@ import { MarketsService } from '../markets';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService, private readonly marketsService: MarketsService) { }
 
+  async updateStock(productId: string, newStock: number) {
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: { stock: newStock },
+    });
+  }
+
   async create(createProductDto: CreateProductDto) {
     return this.prisma.product.create({
       data: createProductDto,

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto, UpdateProductDto } from './dto';
+import { CreateProductDto, UpdateProductDto, UpdateStockDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard, Roles, successResponse } from '@common';
@@ -35,7 +35,6 @@ export class ProductsController {
   }
 
   @Get(':id')
-
   async findOne(@Param('id') id: string) {
     const data = await this.productsService.findOne(id);
     return successResponse(data, 'Product retrieved successfully');
@@ -46,6 +45,13 @@ export class ProductsController {
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     const data = await this.productsService.update(id, updateProductDto);
     return successResponse(data, 'Product updated successfully');
+  }
+
+  @Roles(Role.ADMIN, Role.WAREHOUSE_MANAGER)
+  @Put('stock/:id')
+  async updateStock(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
+    const data = await this.productsService.updateStock(id, updateStockDto.stock);
+    return successResponse(data, 'Product Stock updated successfully');
   }
 
   @Roles(Role.ADMIN, Role.SELLER)

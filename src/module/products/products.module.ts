@@ -10,5 +10,6 @@ import { MarketsModule } from '../markets';
   imports: [PrismaModule, MarketsModule],
   controllers: [ProductsController],
   providers: [ProductsService, JwtService, RolesGuard],
+  exports: [ProductsService]
 })
 export class ProductsModule {}
