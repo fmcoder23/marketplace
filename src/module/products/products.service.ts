@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@prisma';
-import { CreateProductDto, UpdateProductDto } from './dto';
-import { MarketsService } from '../markets';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "@prisma";
+import { MarketsService } from "../markets";
+import { CreateProductDto, FilterProductDto, UpdateProductDto } from "./dto";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService, private readonly marketsService: MarketsService) { }
+  constructor(private readonly prisma: PrismaService, private readonly marketsService: MarketsService) {}
 
   async updateStock(productId: string, newStock: number) {
     return this.prisma.product.update({
@@ -17,7 +17,6 @@ export class ProductsService {
   async updateOrderCount(productId: string, increment: boolean) {
     const product = await this.findOne(productId);
     const updatedOrderCount = increment ? (product.orderCount || 0) + 1 : (product.orderCount || 0) - 1;
-
     await this.prisma.product.update({
       where: { id: productId },
       data: { orderCount: updatedOrderCount < 0 ? 0 : updatedOrderCount },
@@ -30,26 +29,85 @@ export class ProductsService {
     });
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, filterDto: FilterProductDto) {
+    const {
+      search,
+      minPrice,
+      maxPrice,
+      minRating,
+      categoryId,
+      marketId,
+      sortBy = 'name',
+      sortDirection = 'asc',
+      page = 1,
+      pageSize = 10,
+    } = filterDto;
+
+    const skip = (page - 1) * pageSize;
+
     const products = await this.prisma.product.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        AND: [
+          search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: 'insensitive' } },
+                  { description: { contains: search, mode: 'insensitive' } },
+                ],
+              }
+            : {},
+          minPrice ? { price: { gte: minPrice } } : {},
+          maxPrice ? { price: { lte: maxPrice } } : {},
+          minRating ? { rating: { gte: minRating } } : {},
+          categoryId ? { categoryId } : {},
+          marketId ? { marketId } : {},
+        ],
+      },
+      orderBy: {
+        [sortBy]: sortDirection,
+      },
+      skip,
+      take: pageSize,
       include: {
         favorites: {
-          where: { userId }, 
+          where: { userId },
         },
       },
     });
-  
-    return products.map(product => ({
+
+    const totalCount = await this.prisma.product.count({
+      where: {
+        deletedAt: null,
+        AND: [
+          search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: 'insensitive' } },
+                  { description: { contains: search, mode: 'insensitive' } },
+                ],
+              }
+            : {},
+          minPrice ? { price: { gte: minPrice } } : {},
+          maxPrice ? { price: { lte: maxPrice } } : {},
+          minRating ? { rating: { gte: minRating } } : {},
+          categoryId ? { categoryId } : {},
+          marketId ? { marketId } : {},
+        ],
+      },
+    });
+
+    const productsWithFavorite = products.map((product) => ({
       ...product,
-      isFavorite: product.favorites.length > 0, 
+      isFavorite: product.favorites.length > 0,
     }));
+
+    return { data: productsWithFavorite, totalCount, page, pageSize };
   }
-  
 
   async findMyProducts(userId: string) {
     const markets = await this.marketsService.findMyMarkets(userId);
-    const marketIds = markets.map(market => market.id);
+    const marketIds = markets.map((market) => market.id);
 
     return this.prisma.product.findMany({
       where: {

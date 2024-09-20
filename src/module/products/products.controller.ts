@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto, UpdateProductDto, UpdateStockDto } from './dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateProductDto, FilterProductDto, UpdateProductDto, UpdateStockDto } from './dto';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard, Roles, successResponse } from '@common';
 import { Request } from 'express';
@@ -22,9 +22,19 @@ export class ProductsController {
 
   @Roles(Role.USER, Role.SELLER, Role.ADMIN, Role.WAREHOUSE_MANAGER)
   @Get()
-  async findAll(@Req() request: Request) {
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'minPrice', required: false })
+  @ApiQuery({ name: 'maxPrice', required: false })
+  @ApiQuery({ name: 'minRating', required: false })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'marketId', required: false })
+  @ApiQuery({ name: 'sortBy', enum: ['price', 'rating', 'orderCount'], required: false })
+  @ApiQuery({ name: 'sortDirection', enum: ['asc', 'desc'], required: false })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, example: 10 })
+  async findAll(@Query() filterDto: FilterProductDto, @Req() request: Request) {
     const user = request.user;
-    const data = await this.productsService.findAll(user.id);
+    const data = await this.productsService.findAll(user.id, filterDto);
     return successResponse(data, 'Products retrieved successfully');
   }
 
