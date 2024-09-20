@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@prisma'
-import { AuthModule, CartsModule, CategoriesModule, FavoritesModule, LocationsModule, MarketsModule, OrdersModule, ProductsModule, UploadModule, UsersModule } from '@module'
+import { AuthModule, CartsModule, CategoriesModule, FavoritesModule, LocationsModule, MarketsModule, OrdersModule, ProductsModule, ReviewsModule, UploadModule, UsersModule } from '@module'
 import { AppConfig, DbConfig, JwtConfig, R2Config, SwaggerConfig } from '@config';
 import { WaybillsModule } from './module/waybills';
 
@@ -28,7 +28,8 @@ import { WaybillsModule } from './module/waybills';
     OrdersModule,
     CartsModule,
     WaybillsModule,
-    FavoritesModule
+    FavoritesModule,
+    ReviewsModule
   ],
 })
 export class AppModule { }
