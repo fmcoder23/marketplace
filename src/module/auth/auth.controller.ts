@@ -32,4 +32,9 @@ export class AuthController {
   async sellerLogin(@Body() loginDto: LoginDto) {
     return this.authService.sellerLogin(loginDto);
   }
+
+  @Post('warehouse-manager/login')
+  async warehouseManagerLogin(@Body() loginDto: LoginDto) {
+    return this.authService.warehouseManagerLogin(loginDto);
+  }
 }

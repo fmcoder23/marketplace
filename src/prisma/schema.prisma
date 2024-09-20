@@ -192,7 +192,7 @@ model Waybill {
 
     items         WaybillItem[]
     status        WaybillStatus @default(PENDING)
-    scheduledDate DateTime
+    scheduledDate DateTime?
     acceptedDate  DateTime?
 
     sellerId String @db.Uuid

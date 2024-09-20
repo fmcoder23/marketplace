@@ -71,6 +71,10 @@ export class AuthService {
     return this.login(loginDto, Role.SELLER);
   }
 
+  async warehouseManagerLogin(loginDto: LoginDto) {
+    return this.login(loginDto, Role.WAREHOUSE_MANAGER);
+  }
+
   async userRegister(registerDto: RegisterDto) {
     return this.register(registerDto, Role.USER);
   }
