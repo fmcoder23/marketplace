@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { WaybillsService } from './waybills.service';
 import { CreateWaybillDto, UpdateDateDto, UpdateWaybillDto } from './dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Roles, RolesGuard, successResponse } from '@common';
 import { Role } from '@prisma/client';
 import { Request } from 'express';
@@ -15,6 +15,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER)
   @Post()
+  @ApiOperation({ summary: 'Create a new waybill (seller only)' })
   async create(@Body() createWaybillDto: CreateWaybillDto, @Req() request: Request) {
     const seller = request.user;
     const data = await this.waybillsService.create(createWaybillDto, seller.id);
@@ -23,6 +24,7 @@ export class WaybillsController {
 
   @Roles(Role.WAREHOUSE_MANAGER, Role.ADMIN)
   @Get()
+  @ApiOperation({ summary: 'Retrieve all waybills (warehouse manager or admin)' })
   async findAll() {
     const data = await this.waybillsService.findAll();
     return successResponse(data, 'Waybills retrieved successfully');
@@ -30,6 +32,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER)
   @Get('me')
+  @ApiOperation({ summary: 'Retrieve the current seller\'s waybills' })
   async findMyWaybills(@Req() request: Request) {
     const sellerId = request.user.id;
     const data = await this.waybillsService.findMyWaybills(sellerId);
@@ -38,6 +41,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER, Role.WAREHOUSE_MANAGER, Role.ADMIN)
   @Get(':id')
+  @ApiOperation({ summary: 'Retrieve a specific waybill by ID' })
   async findOne(@Param('id') id: string) {
     const data = await this.waybillsService.findOne(id);
     return successResponse(data, 'Waybill retrieved successfully');
@@ -45,6 +49,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER)
   @Put(':id/scheduled-date')
+  @ApiOperation({ summary: 'Update the scheduled date for a waybill (seller only)' })
   async updateScheduledDate(
     @Param('id') id: string,
     @Body() scheduledDate: UpdateDateDto,
@@ -55,6 +60,7 @@ export class WaybillsController {
 
   @Roles(Role.ADMIN)
   @Put(':id')
+  @ApiOperation({ summary: 'Update a waybill by ID (admin only)' })
   async updateForAdmin(@Param('id') id: string, @Body() updateWaybillDto: UpdateWaybillDto) {
     const data = await this.waybillsService.updateForAdmin(id, updateWaybillDto);
     return successResponse(data, 'Waybill updated successfully');
@@ -62,6 +68,7 @@ export class WaybillsController {
 
   @Roles(Role.WAREHOUSE_MANAGER, Role.ADMIN)
   @Put(':id/accept')
+  @ApiOperation({ summary: 'Accept a waybill (warehouse manager or admin)' })
   async acceptWaybill(@Param('id') id: string) {
     const data = await this.waybillsService.acceptWaybill(id);
     return successResponse(data, 'Waybill accepted successfully');
@@ -69,6 +76,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER, Role.WAREHOUSE_MANAGER, Role.ADMIN)
   @Delete(':id')
+  @ApiOperation({ summary: 'Cancel a waybill by ID (seller, warehouse manager, or admin)' })
   async remove(@Param('id') id: string) {
     await this.waybillsService.remove(id);
     return successResponse(null, 'Waybill cancelled successfully');
