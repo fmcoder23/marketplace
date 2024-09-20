@@ -1,7 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { LoginDto, RegisterDto } from './dto';
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { LoginDto, RegisterDto, VerifyOtpDto } from './dto';
+import { Role } from '@prisma/client';
 
 @ApiTags('AUTH')
 @Controller('auth')
@@ -11,13 +12,21 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: 'Register as a User' })
   async userRegister(@Body() registerDto: RegisterDto) {
-    return this.authService.userRegister(registerDto);
+    return this.authService.sendOtpForRegister(registerDto, Role.USER);
   }
 
   @Post('seller/register')
   @ApiOperation({ summary: 'Register as a Seller' })
   async sellerRegister(@Body() registerDto: RegisterDto) {
-    return this.authService.sellerRegister(registerDto);
+    return this.authService.sendOtpForRegister(registerDto, Role.SELLER);
+  }
+
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify OTP and complete registration' })
+  @ApiBody({ type: VerifyOtpDto }) 
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    const { email, otp } = verifyOtpDto;
+    return this.authService.verifyOtpAndRegister(email, otp);
   }
 
   @Post('login')
