@@ -265,7 +265,6 @@ model Favorite {
     product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
     @@id([id])
     @@unique([userId, productId])

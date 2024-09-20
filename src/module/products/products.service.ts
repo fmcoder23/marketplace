@@ -20,18 +20,22 @@ export class ProductsService {
     });
   }
 
-  async findAll() {
-    return this.prisma.product.findMany({
+  async findAll(userId: string) {
+    const products = await this.prisma.product.findMany({
       where: { deletedAt: null },
       include: {
-        category: true,
-        market: true,
-      },
-      orderBy: {
-        name: 'asc',
+        favorites: {
+          where: { userId }, 
+        },
       },
     });
+  
+    return products.map(product => ({
+      ...product,
+      isFavorite: product.favorites.length > 0, 
+    }));
   }
+  
 
   async findMyProducts(userId: string) {
     const markets = await this.marketsService.findMyMarkets(userId);

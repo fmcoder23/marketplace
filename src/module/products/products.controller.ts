@@ -20,10 +20,12 @@ export class ProductsController {
     return successResponse(data, 'Product created successfully');
   }
 
+  @Roles(Role.USER, Role.SELLER, Role.ADMIN, Role.WAREHOUSE_MANAGER)
   @Get()
-  async findAll() {
-    const data = await this.productsService.findAll();
-    return successResponse(data, 'All products retrieved successfully');
+  async findAll(@Req() request: Request) {
+    const user = request.user;
+    const data = await this.productsService.findAll(user.id);
+    return successResponse(data, 'Products retrieved successfully');
   }
 
   @Roles(Role.SELLER)

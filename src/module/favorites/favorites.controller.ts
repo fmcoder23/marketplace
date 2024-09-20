@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
-import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { RolesGuard, Roles, successResponse } from '@common';
+import { Role } from '@prisma/client';
+import { Request } from 'express';
 
+@ApiTags('FAVORITES')
+@ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller('favorites')
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
-  @Post()
-  create(@Body() createFavoriteDto: CreateFavoriteDto) {
-    return this.favoritesService.create(createFavoriteDto);
+  @Roles(Role.USER)
+  @Post('toggle')
+  async toggleFavorite(@Body() createFavoriteDto: CreateFavoriteDto, @Req() request: Request) {
+    const user = request.user;
+    const result = await this.favoritesService.toggleFavorite(createFavoriteDto, user.id);
+    return successResponse(null, result.message);
   }
 
+  @Roles(Role.USER)
   @Get()
-  findAll() {
-    return this.favoritesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.favoritesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFavoriteDto: UpdateFavoriteDto) {
-    return this.favoritesService.update(+id, updateFavoriteDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.favoritesService.remove(+id);
+  async findMyFavorites(@Req() request: Request) {
+    const user = request.user;
+    const data = await this.favoritesService.findMyFavorites(user.id);
+    return successResponse(data, 'Favorites retrieved successfully');
   }
 }
