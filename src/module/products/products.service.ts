@@ -14,6 +14,16 @@ export class ProductsService {
     });
   }
 
+  async updateOrderCount(productId: string, increment: boolean) {
+    const product = await this.findOne(productId);
+    const updatedOrderCount = increment ? (product.orderCount || 0) + 1 : (product.orderCount || 0) - 1;
+
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { orderCount: updatedOrderCount < 0 ? 0 : updatedOrderCount },
+    });
+  }
+
   async create(createProductDto: CreateProductDto) {
     return this.prisma.product.create({
       data: createProductDto,

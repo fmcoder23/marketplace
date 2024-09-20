@@ -113,6 +113,7 @@ model Product {
     photos      String[]
     price       Int
     stock       Int      @default(0)
+    orderCount  Int?
     rating      Float?
 
     categoryId String   @db.Uuid

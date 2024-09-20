@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { WaybillsService } from './waybills.service';
 import { CreateWaybillDto, UpdateDateDto, UpdateWaybillDto } from './dto';
-import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles, RolesGuard, successResponse } from '@common';
 import { Role } from '@prisma/client';
 import { Request } from 'express';

@@ -1,13 +1,8 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
-import { PrismaService } from '@prisma';
-import { CreateOrderDto, UpdateOrderDto } from './dto';
-import { ProductsService } from '../products';
-import { OrderStatus } from '@prisma/client';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from "@nestjs/common";
+import { PrismaService } from "@prisma";
+import { OrderStatus } from "@prisma/client";
+import { ProductsService } from "../products";
+import { CreateOrderDto, UpdateOrderDto } from "./dto";
 
 @Injectable()
 export class OrdersService {
@@ -18,7 +13,6 @@ export class OrdersService {
 
   private async handleStock(productId: string, quantity: number, reduce: boolean = true) {
     const product = await this.productsService.findOne(productId);
-
     const updatedStock = reduce
       ? product.stock - quantity
       : product.stock + quantity;
@@ -30,7 +24,6 @@ export class OrdersService {
     }
 
     await this.productsService.updateStock(productId, updatedStock);
-
     return product;
   }
 
@@ -51,6 +44,8 @@ export class OrdersService {
       });
 
       totalPrice += itemPrice;
+
+      await this.productsService.updateOrderCount(item.productId, true);
     }
 
     return this.prisma.order.create({
@@ -65,6 +60,22 @@ export class OrdersService {
         orderedItems: true,
       },
     });
+  }
+
+  async findOne(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        orderedItems: true,
+        user: true,
+      },
+    });
+
+    if (!order || order.deletedAt) {
+      throw new NotFoundException('Order not found or has been deleted');
+    }
+
+    return order;
   }
 
   async findAll() {
@@ -90,22 +101,6 @@ export class OrdersService {
         createdAt: 'desc',
       },
     });
-  }
-
-  async findOne(id: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        orderedItems: true,
-        user: true,
-      },
-    });
-
-    if (!order || order.deletedAt) {
-      throw new NotFoundException('Order not found or has been deleted');
-    }
-
-    return order;
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto) {
@@ -157,6 +152,8 @@ export class OrdersService {
 
     for (const orderItem of order.orderedItems) {
       await this.handleStock(orderItem.productId, orderItem.quantity, false);
+
+      await this.productsService.updateOrderCount(orderItem.productId, false);
     }
 
     return this.prisma.order.update({
