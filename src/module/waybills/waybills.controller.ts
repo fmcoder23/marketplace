@@ -30,7 +30,7 @@ export class WaybillsController {
 
   @Roles(Role.SELLER)
   @Get('me')
-  async findMyWaybills(@Req() request: any) {
+  async findMyWaybills(@Req() request: Request) {
     const sellerId = request.user.id;
     const data = await this.waybillsService.findMyWaybills(sellerId);
     return successResponse(data, 'Your waybills retrieved successfully');

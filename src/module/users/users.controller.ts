@@ -4,6 +4,7 @@ import { CreateUserDto, UpdateUserDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { JwtPayload, Roles, RolesGuard, successResponse } from '@common';
+import { Request } from 'express';
 
 @ApiTags("USERS")
 @ApiBearerAuth()
@@ -14,7 +15,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
   @Get('me')
-  async getMe(@Req() request: any) {
+  async getMe(@Req() request: Request) {
     const user = request.user as JwtPayload;
     const userProfile = await this.usersService.getUserById(user.id);
     return successResponse(userProfile, 'User profile fetched successfully');
@@ -23,7 +24,7 @@ export class UsersController {
   @Roles(Role.ADMIN, Role.SELLER, Role.USER, Role.WAREHOUSE_MANAGER)
   @Put('me')
   async updateMe(
-    @Req() request: any,
+    @Req() request: Request,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const user = request.user as JwtPayload;

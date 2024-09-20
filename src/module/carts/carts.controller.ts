@@ -4,6 +4,7 @@ import { CreateCartItemDto, UpdateCartItemDto } from './dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles, RolesGuard, successResponse } from '@common';
 import { Role } from '@prisma/client';
+import { Request } from 'express';
 
 @ApiTags('CARTS')
 @ApiBearerAuth()
@@ -14,7 +15,7 @@ export class CartsController {
 
   @Roles(Role.USER)
   @Post('items')
-  async addToCart(@Body() createCartItemDto: CreateCartItemDto, @Req() request: any) {
+  async addToCart(@Body() createCartItemDto: CreateCartItemDto, @Req() request: Request) {
     const userId = request.user.id;
     const data = await this.cartsService.create(userId, createCartItemDto);
     return successResponse(data, 'Item added to cart successfully');
@@ -22,7 +23,7 @@ export class CartsController {
 
   @Roles(Role.USER)
   @Get('me')
-  async getMyCart(@Req() request: any) {
+  async getMyCart(@Req() request: Request) {
     const userId = request.user.id;
     const data = await this.cartsService.findMyCart(userId);
     return successResponse(data, 'Your cart retrieved successfully');
@@ -46,7 +47,7 @@ export class CartsController {
 
   @Roles(Role.USER)
   @Delete('clear')
-  async clearMyCart(@Req() request: any) {
+  async clearMyCart(@Req() request: Request) {
     const userId = request.user.id;
     await this.cartsService.clearCart(userId);
     return successResponse(null, 'Cart cleared successfully');

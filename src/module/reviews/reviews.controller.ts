@@ -4,6 +4,7 @@ import { CreateReviewDto, UpdateReviewDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RolesGuard, Roles, successResponse } from '@common';
 import { Role } from '@prisma/client';
+import { Request } from 'express';
 
 @ApiTags('REVIEWS')
 @ApiBearerAuth()
@@ -14,7 +15,7 @@ export class ReviewsController {
 
   @Roles(Role.USER)
   @Post()
-  async create(@Req() request: any, @Body() createReviewDto: CreateReviewDto) {
+  async create(@Req() request: Request, @Body() createReviewDto: CreateReviewDto) {
     const userId = request.user.id;
     const data = await this.reviewsService.create(userId, createReviewDto);
     return successResponse(data, 'Review created successfully');
@@ -36,7 +37,7 @@ export class ReviewsController {
 
   @Roles(Role.USER)
   @Get('me')
-  async findMyReviews(@Req() request: any) {
+  async findMyReviews(@Req() request: Request) {
     const userId = request.user.id;
     const data = await this.reviewsService.findMyReviews(userId);
     return successResponse(data, 'Your reviews retrieved successfully');

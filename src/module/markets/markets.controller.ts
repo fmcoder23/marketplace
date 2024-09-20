@@ -4,6 +4,7 @@ import { CreateMarketDto, UpdateMarketDto } from './dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles, RolesGuard, successResponse } from '@common';
+import { Request } from 'express';
 
 @ApiTags('MARKETS')
 @UseGuards(RolesGuard)
@@ -21,7 +22,7 @@ export class MarketsController {
 
   @Roles(Role.SELLER)
   @Post('seller')
-  async createForSeller(@Body() createMarketDto: CreateMarketDto, @Req() request: any) {
+  async createForSeller(@Body() createMarketDto: CreateMarketDto, @Req() request: Request) {
     const userId = request.user.id;
     const data = await this.marketsService.createForSeller(createMarketDto, userId);
     return successResponse(data, 'Market created successfully');
@@ -35,7 +36,7 @@ export class MarketsController {
 
   @Roles(Role.SELLER)
   @Get('me')
-  async findMyMarkets(@Req() request: any) {
+  async findMyMarkets(@Req() request: Request) {
     const userId = request.user.id;
     const data = await this.marketsService.findMyMarkets(userId);
     return successResponse(data, 'Your markets retrieved successfully');

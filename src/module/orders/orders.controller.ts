@@ -30,7 +30,7 @@ export class OrdersController {
 
   @Roles(Role.USER)
   @Get('me')
-  async findMyOrders(@Req() request: any) {
+  async findMyOrders(@Req() request: Request) {
     const userId = request.user.id;
     const data = await this.ordersService.findMyOrders(userId);
     return successResponse(data, 'Your orders retrieved successfully');
